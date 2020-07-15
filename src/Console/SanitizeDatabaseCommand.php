@@ -62,7 +62,7 @@ class SanitizeDatabaseCommand extends Command
         if(!$this->info){
             $this->warn("Note : Info you want to know which tables will be sanitized before running the command, run command with --info option");
         }
-        
+
         if (!$this->info && !$this->confirm("Command will sanitize the data on endpoint: {$this->database}, do you wish to continue?")) {
             return $this->info('Aborted...');
         }
@@ -97,7 +97,7 @@ class SanitizeDatabaseCommand extends Command
             $model = app()->make($model);
             $table = $model->getTable();
 
-            if(!empty($tables) && !in_array($table, $tables)){
+            if(!empty($this->tables) && !in_array($table, $this->tables)){
                 return;
             }
 

@@ -1,5 +1,5 @@
 {  
-    "name":"techsemicolon/laravel-database-key-sanitizer",
+    "name":"techsemicolon/laravel-database-sanitizer",
     "license":"MIT",
     "authors":[  
        {  
