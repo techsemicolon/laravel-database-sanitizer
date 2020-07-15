@@ -1,0 +1,29 @@
+{  
+    "name":"techsemicolon/laravel-database-key-sanitizer",
+    "license":"MIT",
+    "authors":[  
+       {  
+          "name":"MihirBhende",
+          "email":"mihirbhende1201@gmail.com"
+       }
+    ],
+    "description":"Sanitize your existing database with dummy data from a single artisan command",
+    "minimum-stability":"dev",
+    "require":{  
+       "php":">=5.4.0",
+       "illuminate/support": "5.2.x|5.3.x|5.4.x|5.5.x|5.6.x|5.7.x|5.8.x|6.x.x|7.x.x"
+ 
+    },
+    "autoload":{  
+       "psr-4":{  
+          "Techsemicolon\\Sanitizer\\":"src/"
+       }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Techsemicolon\\Sanitizer\\DatabaseSanitizerServiceProvider"
+            ]
+        }
+    },
+}
