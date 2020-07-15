@@ -14,3 +14,6 @@ return [
     'models' => [
         // e.g. User::class
     ],
+
+]
+?>
