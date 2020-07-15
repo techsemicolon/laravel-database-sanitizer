@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class SanitizeDatabaseCommand extends Command
 {
-    private $faker, $database, $info, $tables;
+    private $faker, $database, $info, $tables, $models;
 
     /**
      * The name and signature of the console command.
@@ -32,6 +32,7 @@ class SanitizeDatabaseCommand extends Command
     public function __construct()
     {
         $this->faker = Factory::create();
+        $this->models = config('sanitizer.models');
         $this->database = config('database.connections.mysql.host');
         parent::__construct();
     }
@@ -45,7 +46,8 @@ class SanitizeDatabaseCommand extends Command
     {
         $this->info(PHP_EOL);
         $this->info = $this->option('info');
-        $this->tables = explode(',', $this->option('tables'));
+        $this->tables = trim($this->option('tables'));
+        $this->tables = array_filter(explode(',', $this->option('tables')));
 
         if(!$this->info){
             $this->warn("Note : Info you want to know which tables will be sanitized before running the command, run command with --info option");
@@ -54,7 +56,7 @@ class SanitizeDatabaseCommand extends Command
         if (!$this->info && !$this->confirm("Command will sanitize the data on endpoint: {$this->database}, do you wish to continue?")) {
             return $this->info('Aborted...');
         }
-
+        
         if(empty($this->models)){
             return $this->warn('No models specified to be sanitized...');
         }
@@ -74,16 +76,13 @@ class SanitizeDatabaseCommand extends Command
      */
     private function initiate()
     {
-        $models = config('sanitizer.models');
-
-        collect($models)->each(function($model){
-            
+        collect($this->models)->each(function($model){
             // Skip if class does not exist
             if(!class_exists($model)){
                 $this->warn("Class {$model} does not exist, skipping...");
                 return;
             }
-
+            
             $model = app()->make($model);
             $table = $model->getTable();
 
@@ -111,11 +110,10 @@ class SanitizeDatabaseCommand extends Command
         }
         
         $sanitizer = collect($model->sanitize());
-
         $bar = $this->output->createProgressBar($model->count());
         $bar->start();
   
-        $model->chunk(1000, function($rows) use ($sanitizer, $bar){
+        $model->chunk(config('sanitizer.chunk_count', 1000), function($rows) use ($sanitizer, $bar){
             
             $rows->each(function($row) use($sanitizer, $bar){
                 
