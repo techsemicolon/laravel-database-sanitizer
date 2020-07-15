@@ -4,8 +4,6 @@ namespace Techsemicolon\Sanitizer\Console;
 
 use Faker\Factory;
 use Illuminate\Console\Command;
-use App\TC\Models\Patients\Patient;
-use App\TC\Models\Help\HelpdeskTicket;
 use Illuminate\Database\Eloquent\Model;
 
 class SanitizeDatabaseCommand extends Command
@@ -25,16 +23,6 @@ class SanitizeDatabaseCommand extends Command
      * @var string
      */
     protected $description = 'Sanitize database';
-
-    /**
-     * The application's models which need sanitization
-     *
-     * @var array
-     */
-    protected $models = [
-        HelpdeskTicket::class,
-        // Patient::class
-    ];
 
     /**
      * Create a new command instance.
@@ -86,7 +74,9 @@ class SanitizeDatabaseCommand extends Command
      */
     private function initiate()
     {
-        collect($this->models)->each(function($model){
+        $models = config('sanitizer.models');
+
+        collect($models)->each(function($model){
             
             // Skip if class does not exist
             if(!class_exists($model)){

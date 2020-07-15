@@ -14,7 +14,9 @@ class DatabaseSanitizerServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        
+        $this->publishes([
+            __DIR__.'/sanitizer.php' => config_path('sanitizer.php'),
+        ]);
     }
 
     /**
