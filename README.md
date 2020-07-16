@@ -1,4 +1,4 @@
-# Sanitize your existing database with dummy data from a single artisan command
+# Sanitize/fake database from a single artisan command
 
 Laravel factories and database seeding is really great tool to populate dummy data. However, sometimes all you want is a real production-like data to work with. Because that mostly contains all workflows and different data sets created by different domain events. 
 
