@@ -11,8 +11,21 @@ return [
     |
     */
 
-    'models' => [
+    'sanitize_models' => [
         // e.g. User::class
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Models to Truncate
+    |--------------------------------------------------------------------------
+    |
+    | Add all models which you would like to truncate
+    |
+    */
+
+    'truncate_models' => [
+        // e.g. CustomLog::class
     ],
 
     /*

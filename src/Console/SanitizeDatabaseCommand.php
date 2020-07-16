@@ -4,18 +4,19 @@ namespace Techsemicolon\Sanitizer\Console;
 
 use Faker\Factory;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 
 class SanitizeDatabaseCommand extends Command
 {
-    private $faker, $database, $info, $tables, $models;
+    private $faker, $database, $info, $tables, $models, $truncates;
 
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'db:sanitize {--info} {--tables=}';
+    protected $signature = 'db:sanitize {--info} {--truncate} {--tables=}';
 
     /**
      * The console command description.
@@ -32,7 +33,8 @@ class SanitizeDatabaseCommand extends Command
     public function __construct()
     {
         $this->faker = Factory::create();
-        $this->models = config('sanitizer.models');
+        $this->models = config('sanitizer.sanitize_models');
+        $this->truncates = config('sanitizer.truncate_models');
         $this->database = config('database.connections.mysql.host');
         parent::__construct();
     }
@@ -65,16 +67,43 @@ class SanitizeDatabaseCommand extends Command
             return $this->showInfo();
         }
 
-        $this->initiate();
+        if(!$this->option('truncate')){
+            $this->initiateSanitization();
+        }
+
+        $this->truncate();
+
         $this->info(PHP_EOL);
     }
 
     /**
-     * Run the sanitization
+     * Truncate the tables.
+     *
+     * @return mixed
+     */
+    private function truncate()
+    {
+        collect($this->truncates)->each(function($model){
+            // Skip if class does not exist
+            if(!class_exists($model)){
+                $this->warn("Class {$model} does not exist, skipping...");
+                return;
+            }
+            
+            $model = app()->make($model);
+            $table = $model->getTable();
+
+            $this->info('Truncating table : ' . $table);
+            DB::table($table)->truncate();
+        });
+    }
+
+    /**
+     * Initiate the sanitization
      * 
      * @return void
      */
-    private function initiate()
+    private function initiateSanitization()
     {
         collect($this->models)->each(function($model){
             // Skip if class does not exist
@@ -91,7 +120,7 @@ class SanitizeDatabaseCommand extends Command
             }
 
             $this->info('Sanitizing table : ' . $table);
-            $this->sanitize($model);
+            $this->sanitizeModel($model);
         });
     }
 
@@ -103,7 +132,7 @@ class SanitizeDatabaseCommand extends Command
      * 
      * @return void
      */
-    private function sanitize(Model $model)
+    private function sanitizeModel(Model $model)
     {
         if(!method_exists($model, 'sanitize')){
             return $this->warn("Class {$model} does not contain method sanitize(), skipping...");
@@ -145,6 +174,20 @@ class SanitizeDatabaseCommand extends Command
         $this->info('Sanitizer will update following tables:');
 
         collect($this->models)->each(function($model){
+            
+            // Skip if class does not exist
+            if(!class_exists($model)){
+                $this->warn("Class {$model} does not exist, skipping...");
+                return;
+            }
+
+            $model = app()->make($model);
+            $this->info('- ' . $model->getTable());
+        });   
+        
+        $this->info('Sanitizer will truncate following tables:');
+
+        collect($this->truncates)->each(function($model){
             
             // Skip if class does not exist
             if(!class_exists($model)){
