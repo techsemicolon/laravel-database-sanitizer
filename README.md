@@ -52,7 +52,7 @@ return [
 ]
 ~~~
 
-Each model specified in above configuration needs to have a method called `sanitize`, which will return array of columns to sanitize with dummy values like below : 
+Each model specified in above configuration's `sanitize_models` array needs to have a method called `sanitize`, which will return array of columns to sanitize with dummy values like below : 
 
 ~~~php
 /**
