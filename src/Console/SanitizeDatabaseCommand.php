@@ -5,6 +5,7 @@ namespace Techsemicolon\Sanitizer\Console;
 use Faker\Factory;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\Model;
 
 class SanitizeDatabaseCommand extends Command
@@ -50,7 +51,7 @@ class SanitizeDatabaseCommand extends Command
         $this->info = $this->option('info');
         $this->tables = trim($this->option('tables'));
         $this->tables = array_filter(explode(',', $this->option('tables')));
-
+        
         if(!$this->info){
             $this->warn("Note : Info you want to know which tables will be sanitized before running the command, run command with --info option");
         }
@@ -67,11 +68,15 @@ class SanitizeDatabaseCommand extends Command
             return $this->showInfo();
         }
 
+        Schema::disableForeignKeyConstraints();
+
         if(!$this->option('truncate')){
             $this->initiateSanitization();
         }
 
         $this->truncate();
+
+        Schema::enableForeignKeyConstraints();
 
         $this->info(PHP_EOL);
     }
@@ -90,7 +95,7 @@ class SanitizeDatabaseCommand extends Command
                 return;
             }
             
-            $model = app()->make($model);
+            $model = $this->getModel($model);
             $table = $model->getTable();
 
             $this->info('Truncating table : ' . $table);
@@ -112,7 +117,7 @@ class SanitizeDatabaseCommand extends Command
                 return;
             }
             
-            $model = app()->make($model);
+            $model = $this->getModel($model);
             $table = $model->getTable();
 
             if(!empty($this->tables) && !in_array($table, $this->tables)){
@@ -181,7 +186,7 @@ class SanitizeDatabaseCommand extends Command
                 return;
             }
 
-            $model = app()->make($model);
+            $model = $this->getModel($model);
             $this->info('- ' . $model->getTable());
         });   
         
@@ -195,8 +200,20 @@ class SanitizeDatabaseCommand extends Command
                 return;
             }
 
-            $model = app()->make($model);
+            $model = $this->getModel($model);
             $this->info('- ' . $model->getTable());
         });   
+    }
+
+    /**
+     * Get model instance from class
+     * 
+     * @param string $modelClass
+     * 
+     * @return Model
+     */
+    private function getModel(string $modelClass)
+    {
+        return app()->make($modelClass);
     }
 }
